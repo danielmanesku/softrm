@@ -26,17 +26,12 @@ var cfgFile string
 
 // RootCmd represents the base command when called without any subcommands
 var RootCmd = &cobra.Command{
-	Use:   "softrm",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
+	Use:   "softrm [OPTION]... [FILE]...",
+	Short: "Trash can for command line",
+	Long: `Softrm is a trash can (recycle bin) for command line.
+When you delete a file with softrm's provided rm command,
+the file(s) are only moved to a special directory. Later,
+files can be restored or deleted permanently.`,
 }
 
 // Execute adds all child commands to the root command sets flags appropriately.
@@ -50,29 +45,25 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports Persistent Flags, which, if defined here,
-	// will be global for your application.
-
+	// Global flags for entire application
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.softrm.yaml)")
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	RootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	RootCmd.PersistentFlags().BoolP("verbose", "v", false, "Print more details during execution.")
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" { // enable ability to specify config file via flag
+	if cfgFile != "" { // specify config file via flag
 		viper.SetConfigFile(cfgFile)
+	} else {
+		viper.SetConfigName(".softrm") // name of config file (without extension)
+		viper.AddConfigPath("$HOME")   // adding home directory as first search path
+		viper.AutomaticEnv()           // read in environment variables that match
 	}
-
-	viper.SetConfigName(".softrm") // name of config file (without extension)
-	viper.AddConfigPath("$HOME")   // adding home directory as first search path
-	viper.AutomaticEnv()           // read in environment variables that match
-
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		verbose, err := RootCmd.PersistentFlags().GetBool("verbose")
+		if err == nil && verbose == true {
+			fmt.Println("Using config file:", viper.ConfigFileUsed())
+		}
 	}
 }
