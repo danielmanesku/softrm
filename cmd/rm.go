@@ -66,7 +66,7 @@ softrm rm tempfile.txt`,
 
 		// move all files to deletion instance directory
 		for _, argPath := range args {
-			// create direcotry structure for new file/dir, since os.Rename can't do it
+			// create directory structure for new file/dir, since os.Rename can't do it
 			err := os.MkdirAll(path.Join(delInstancePath, filepath.Dir(argPath)), 0700)
 			if nil != err {
 				fmt.Println(err.Error())
