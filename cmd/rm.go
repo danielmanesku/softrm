@@ -19,9 +19,11 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/danielmanesku/softrm/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -120,8 +122,14 @@ func ensureTrashDirExists() {
 	abortAndExit()
 }
 
+// Deletion instance name (directory name) consists of current
+// time (date and time with seconds precision) and unique id
+// generated from nanoseconds time and encoded with 36 base (which
+// is reversed to get different prefixes)
 func genDeletionInstanceName() string {
-	return time.Now().Format("2006-01-02T15-04-05.999999")
+	nanoTime := time.Now().UTC().UnixNano()
+	id := util.Reverse(strconv.FormatInt(nanoTime, 36))
+	return time.Now().Format("2006-01-02T15-04-05") + "-" + id
 }
 
 // Trash path is currently pointing to config value.
