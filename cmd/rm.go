@@ -82,7 +82,7 @@ softrm rm tempfile.txt`,
 			}
 		}
 
-		fmt.Println("All files were moved to %s directory", delInstancePath)
+		fmt.Println("All files were moved to directory", delInstancePath)
 		fmt.Println("rm operation successfully completed.")
 	},
 }
