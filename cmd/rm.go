@@ -30,15 +30,13 @@ import (
 
 // rmCmd represents the rm command
 var rmCmd = &cobra.Command{
-	Use:   "rm",
+	Use:   "rm FILE [FILE...]",
 	Short: "Move file(s) to trash",
 	Long: `Move files(s) to trash.
 It requires one or more additional parameters that are file
 or directory names in current working directory. Absolute
-paths are supported as well.
-
-For example:
-softrm rm tempfile.txt`,
+paths are supported as well.`,
+	Example: "softrm rm tempfile.txt",
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
 			cmd.Help()
