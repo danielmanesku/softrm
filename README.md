@@ -12,8 +12,7 @@ Note that this is still work in progress, a lot of functionality is missing at t
 softrm rm [args]      # move file(s) to trash
 softrm list           # show trash contents (not implemented yet)
 softrm restore [id]   # restore group of files deleted with [id] (not implemented yet)
-softrm flush [id]     # permanently delete group of files [id] (not implemented yet)
-softrm cleanup        # empty trash can (not implemented yet)
+softrm flush [id]     # permanently delete group of files [id]
 ```
 
 In the future it is planned to add support for automatic flushing of files older than specified time.

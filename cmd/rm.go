@@ -20,12 +20,10 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/danielmanesku/softrm/util"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 // rmCmd represents the rm command
@@ -50,7 +48,7 @@ paths are supported as well.`,
 				abortAndExit()
 			}
 		}
-		ensureTrashDirExists()
+		ensureTrashDirExists(true)
 
 		// create deletion instance directory
 		var delInstancePath string
@@ -89,37 +87,6 @@ func init() {
 	RootCmd.AddCommand(rmCmd)
 }
 
-// Check if trash directory exists and has adequate permissions. Create one
-// if it doesn't.
-func ensureTrashDirExists() {
-	trashPath := getTrashPath()
-	fi, err := os.Stat(trashPath)
-	if err == nil {
-		if fi.IsDir() {
-			if 0 != strings.Compare(fi.Mode().Perm().String()[1:4], "rwx") {
-				fmt.Printf("Directory %s does not have 'rwx' permissions for current user.\n", trashPath)
-				abortAndExit()
-			}
-			return // all good
-		} else {
-			fmt.Printf("Node %s exists, but it's not a directory.\n", trashPath)
-			abortAndExit()
-		}
-	}
-	if os.IsNotExist(err) {
-		err := os.MkdirAll(trashPath, 0700)
-		if nil == err {
-			fmt.Printf("Directory %s created.\n", trashPath)
-			return
-		} else {
-			fmt.Println(err.Error())
-			abortAndExit()
-		}
-	}
-	fmt.Println("error:", err)
-	abortAndExit()
-}
-
 // Deletion instance name (directory name) consists of current
 // time (date and time with seconds precision) and unique id
 // generated from nanoseconds time and encoded with 36 base (which
@@ -128,22 +95,4 @@ func genDeletionInstanceName() string {
 	nanoTime := time.Now().UTC().UnixNano()
 	id := util.Reverse(strconv.FormatInt(nanoTime, 36))
 	return time.Now().Format("2006-01-02T15-04-05") + "-" + id
-}
-
-// Trash path is currently pointing to config value.
-// Later it might be more trash paths, one for each partition, to avoid
-// unnecessary data transfers if source and trash path are not on
-// the same partition.
-func getTrashPath() string {
-	return configTrashPath()
-}
-
-func configTrashPath() string {
-	return os.ExpandEnv(viper.GetString("trashdir"))
-}
-
-func abortAndExit() {
-	//TODO maybe replace with log.Fatal
-	fmt.Println("Aborting.")
-	os.Exit(1)
 }
