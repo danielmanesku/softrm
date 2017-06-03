@@ -64,15 +64,18 @@ paths are supported as well.`,
 
 		// move all files to deletion instance directory
 		for _, argPath := range args {
+			argAbsPath, _ := filepath.Abs(argPath)
+			argDirPath := filepath.Dir(argAbsPath)
+
 			// create directory structure for new file/dir, since os.Rename can't do it
-			err := os.MkdirAll(path.Join(delInstancePath, filepath.Dir(argPath)), 0700)
+			err := os.MkdirAll(path.Join(delInstancePath, argDirPath), 0700)
 			if nil != err {
 				fmt.Println(err.Error())
 				abortAndExit()
 			}
 
 			// now move the file/dir
-			if err := os.Rename(argPath, path.Join(delInstancePath, argPath)); err != nil {
+			if err := os.Rename(argPath, path.Join(delInstancePath, argAbsPath)); err != nil {
 				fmt.Println(err.Error())
 				abortAndExit()
 			}
