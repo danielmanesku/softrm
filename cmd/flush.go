@@ -16,10 +16,8 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -64,25 +62,8 @@ will be done - if you need shredding, use a specialized tool for it.`,
 			return
 		}
 
-		// mapping between all available deletion group ids and their directory names
-		delGroupMap := make(map[string]string)
-
-		// check validity of flags
-		{
-			files, _ := ioutil.ReadDir(trashPath)
-			for _, f := range files {
-				fileName := f.Name()
-				delGroupId := fileName[strings.LastIndex(fileName, "-")+1:]
-				delGroupMap[delGroupId] = fileName
-			}
-			for _, arg := range args {
-				_, found := delGroupMap[arg]
-				if !found {
-					fmt.Printf("Id %s not found. Aborting operation, nothing will be deleted\n", arg)
-					return
-				}
-			}
-		}
+		delGroupMap := getDeletionGroupIds(trashPath)
+		checkValidityOfIdArgs(args, delGroupMap)
 
 		// delete each of deletion groups passed as program arguments
 		{
