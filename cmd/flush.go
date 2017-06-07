@@ -62,15 +62,17 @@ will be done - if you need shredding, use a specialized tool for it.`,
 			return
 		}
 
-		delGroupMap := getDeletionGroupIds(trashPath)
-		checkValidityOfIdArgs(args, delGroupMap)
+		delGroups := getSelectedDeletionGroups(args, trashPath)
 
 		// delete each of deletion groups passed as program arguments
 		{
-			for _, arg := range args {
-				deletionPath := path.Join(trashPath, delGroupMap[arg])
+			for _, dg := range delGroups {
+				deletionPath := path.Join(trashPath, dg.startingDir)
 				os.RemoveAll(deletionPath)
+
+				fmt.Printf("All files from %s were permanently deleted\n", deletionPath)
 			}
+			fmt.Println("flush operation successfully completed.")
 		}
 	},
 }

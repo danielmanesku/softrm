@@ -44,14 +44,13 @@ from trash.`,
 		ensureTrashDirExists(false)
 		trashPath := getTrashPath()
 
-		delGroupMap := getDeletionGroupIds(trashPath)
-		checkValidityOfIdArgs(args, delGroupMap)
+		delGroups := getSelectedDeletionGroups(args, trashPath)
 
 		// restore each of deletion groups passed as program arguments
 		{
-			for _, arg := range args {
-				argStartingPath, _ := filepath.Abs(path.Join(trashPath, delGroupMap[arg]))
-				curPath := argStartingPath
+			for _, dg := range delGroups {
+				dgStartingPath, _ := filepath.Abs(path.Join(trashPath, dg.startingDir))
+				curPath := dgStartingPath
 
 				// collect all path segments
 				var restorePathSegments []string
@@ -86,10 +85,10 @@ from trash.`,
 					}
 				}
 
-				// remove root directory for given arg (deletion group id)
-				os.RemoveAll(argStartingPath)
+				// remove root directory for given deletion group id
+				os.RemoveAll(dgStartingPath)
 
-				fmt.Printf("Restoration of %s completed successfully\n", arg)
+				fmt.Printf("Restoration of %s completed successfully.\n", dg.id)
 			}
 		}
 	},

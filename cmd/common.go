@@ -9,6 +9,11 @@ import (
 	"github.com/spf13/viper"
 )
 
+type DeletionGroup struct {
+	id          string
+	startingDir string
+}
+
 // Check if given directory exists and has adequate permissions. Create one
 // if it doesn't.
 func ensureDirExists(dir string, verbose bool) {
@@ -49,29 +54,49 @@ func createDir(path string) {
 	}
 }
 
-// getDeletionGroupIds returns a map of all available deletion group ids and their directory names.
-func getDeletionGroupIds(trashPath string) map[string]string {
-	delGroupMap := make(map[string]string)
-	files, _ := ioutil.ReadDir(trashPath)
-	for _, f := range files {
-		fileName := f.Name()
-		// take last part from dir name, after last dash
-		delGroupId := fileName[strings.LastIndex(fileName, "-")+1:]
-		delGroupMap[delGroupId] = fileName
-	}
-	return delGroupMap
-}
+// getSelectedDeletionGroups will try to match all given (short) ids against
+// existing ids from trash path. It will exit if any of those is not found.
+// It is possible to use as id only a prefix of deletion group. If there is
+// ambiguity (more than one match), command will print an error and exit.
+func getSelectedDeletionGroups(ids []string, trashPath string) []DeletionGroup {
+	delGroups := make([]DeletionGroup, len(ids))
+	found := 0
 
-// checkValidityOfIdArgs will check if all given ids exist.
-// In case any of given ids does not exist message will be printed and application will exit.
-func checkValidityOfIdArgs(ids []string, delGroupMap map[string]string) {
-	for _, id := range ids {
-		_, found := delGroupMap[id]
-		if !found {
-			fmt.Printf("Id %s not found. Aborting operation, nothing will be deleted\n", id)
-			abortAndExit()
+	trashDirs, _ := ioutil.ReadDir(trashPath)
+	for _, dir := range trashDirs {
+		dirName := dir.Name()
+		// take last part from dir name, after last dash
+		idPart := dirName[strings.LastIndex(dirName, "-")+1:]
+		for idx, curId := range ids {
+			if strings.HasPrefix(idPart, curId) { // current directory from
+				// trashPath starts with one of ids we are evaluating
+
+				if delGroups[idx].id != "" {
+					fmt.Printf("ID \"%s\" has more than one match. Please specify more characters.\n", curId)
+					abortAndExit()
+				}
+
+				delGr := DeletionGroup{
+					id:          idPart,
+					startingDir: dirName,
+				}
+				delGroups[idx] = delGr
+				found += 1
+			}
 		}
 	}
+
+	// check if all given ids were found
+	if found != len(ids) {
+		for idx, curId := range ids {
+			if delGroups[idx].id == "" {
+				fmt.Printf("Id %s not found.\n", curId)
+				abortAndExit()
+			}
+		}
+	}
+
+	return delGroups
 }
 
 func dirReadError(dir string, err error) {
