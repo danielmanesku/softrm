@@ -5,13 +5,15 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
 
 type DeletionGroup struct {
-	id          string
-	startingDir string
+	id           string
+	startingDir  string
+	deletionTime time.Time
 }
 
 // Check if given directory exists and has adequate permissions. Create one
